@@ -1,5 +1,5 @@
 /**
- * EcoBrowse 2026 - Dashboard Logic
+ * EcoBrowse 2026 - Popup Logic
  */
 
 function formatDomainName(domain) {
@@ -12,10 +12,10 @@ function renderData() {
     chrome.storage.local.get(['dailyTotal', 'emitters'], (data) => {
         const total = parseFloat(data.dailyTotal) || 0;
         const emitters = data.emitters || {};
-        const budget = 6800; 
+        const budget = 6800;
         const percent = Math.min((total / budget) * 100, 100);
 
-        // 2. PROGRESS BAR
+        // Progress Bar
         const bar = document.getElementById('progress-bar');
         if (bar) {
             bar.style.width = percent + "%";
@@ -25,25 +25,26 @@ function renderData() {
             else bar.classList.add('green');
         }
 
-        // 3. GRADE (Defensive check added)
+        // Grade
         const gradeElement = document.getElementById('grade');
         if (gradeElement) {
-            let grade = "A", color = "#4caf50"; 
+            let grade = "A", color = "#4caf50";
             if (percent > 90) { grade = "F"; color = "#d32f2f"; }
             else if (percent > 70) { grade = "D"; color = "#f44336"; }
             else if (percent > 50) { grade = "C"; color = "#ff9800"; }
             else if (percent > 25) { grade = "B"; color = "#ffc107"; }
+
             gradeElement.innerText = grade;
             gradeElement.style.backgroundColor = color;
         }
 
-        // 4. STATS TEXT (This is likely where your innerText error was)
+        // Stats
         const statElement = document.getElementById('stat');
         if (statElement) {
             statElement.innerText = `${total.toFixed(2)}g / ${budget}g`;
         }
 
-        // 5. RELATIVITY
+        // Relativity
         const relativityElement = document.getElementById('relativity');
         if (relativityElement) {
             const treeImpact = (total / 60).toFixed(1);
@@ -54,7 +55,7 @@ function renderData() {
             `;
         }
 
-        // 6. TOP EMITTERS
+        // Top Emitters
         const listElement = document.getElementById('top-emitters');
         if (listElement) {
             const sorted = Object.entries(emitters)
@@ -79,24 +80,35 @@ function renderData() {
     });
 }
 
-// 7. LISTENERS
+// Listen for storage changes
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') renderData();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Reset Button
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
             if (confirm("Reset today's carbon data?")) {
                 chrome.storage.local.set({ dailyTotal: 0, emitters: {} }, () => {
-                    if (typeof chrome.action !== 'undefined' && chrome.action.setBadgeText) {
-                        chrome.action.setBadgeText({ text: "0" });
-                    }
+                    chrome.action.setBadgeText({ text: "0" });
                     renderData();
                 });
             }
         });
     }
+
+    // View Dashboard Button
+    const dashboardBtn = document.getElementById('open-dashboard');
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', () => {
+            chrome.tabs.create({
+                url: chrome.runtime.getURL("dashboard.html")
+            });
+        });
+    }
+
     renderData();
-}); 
+});
