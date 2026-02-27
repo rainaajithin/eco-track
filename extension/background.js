@@ -1,27 +1,38 @@
+const CO2_PER_MB = 0.81;
+const BUDGET_G = 6800;
 
-// This variable lives in the Service Worker's memory
-let totalBytes = 0;
+function cleanDomain(domain) {
+    if (domain.includes("googlevideo.com") || domain.includes("youtube.com")) return "YouTube";
+    if (domain.includes("fbcdn.net") || domain.includes("facebook.com")) return "Facebook";
+    if (domain.includes("instagram.com")) return "Instagram";
+    if (domain.includes("netflix.com")) return "Netflix";
+    if (domain.includes("google") && !domain.includes("youtube")) return "Google Services";
+    if (domain.includes("gstatic.com") || domain.includes("googleapis.com")) {
+        return "Google Infrastructure"; }
+    return domain;
+}
 
-// 1. The Sensor: Listening to every data response
 chrome.webRequest.onResponseStarted.addListener(
-    (details) => {
-        // Find the 'content-length' (the weight of the data)
-        const header = details.responseHeaders.find(
-            (h) => h.name.toLowerCase() === 'content-length'
-        );
+  (details) => {
+    if (details.tabId === -1 || details.fromCache) return;
 
-        if (header) {
-            const bytes = parseInt(header.value);
-            totalBytes += bytes; // Adding it to our running total
+    const domain = cleanDomain(new URL(details.url).hostname);
+    const header = details.responseHeaders.find(h => h.name.toLowerCase() === 'content-length');
+    let sizeInMB = header ? parseInt(header.value) / 1024 / 1024 : 0.05;
 
-            // Convert to Megabytes for humans
-            const mb = (totalBytes / (1024 * 1024)).toFixed(2);
-            console.log(`Current Session Usage: ${mb} MB`);
-            
-            // 2. Save it to Chrome's local storage so it's 'Permanent-ish'
-            chrome.storage.local.set({ "totalUsage": mb });
-        }
-    },
-    { urls: ["<all_urls>"] }, // Watch every website
-    ["responseHeaders"]        // We need the 'shipping labels'
+    chrome.storage.local.get(['dailyTotal', 'emitters'], (result) => {
+        let total = (parseFloat(result.dailyTotal) || 0) + (sizeInMB * CO2_PER_MB);
+        let emitters = result.emitters || {};
+        emitters[domain] = (emitters[domain] || 0) + (sizeInMB * CO2_PER_MB);
+
+        chrome.storage.local.set({ dailyTotal: total, emitters: emitters }, () => {
+            // UI Feedback: Change badge color based on 6800g
+            chrome.action.setBadgeText({ text: Math.round(total).toString() });
+            let color = total > BUDGET_G ? "#f44336" : "#4caf50"; 
+            chrome.action.setBadgeBackgroundColor({ color: color });
+        });
+    });
+  },
+  { urls: ["<all_urls>"] },
+  ["responseHeaders"]
 );
