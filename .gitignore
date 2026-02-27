@@ -1,0 +1,17 @@
+# Python temporary files (these make the GitHub repo messy)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files (where you might store secret API keys later)
+.env
+venv/
+env/
+
+# Database files (Optional: Usually, you don't push the actual database file 
+# to GitHub because it changes constantly, just the code to create it)
+*.db
+
+# Operating system files
+.DS_Store
+Thumbs.db

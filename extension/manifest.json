@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Eco-Track",
+  "version": "1.0",
+  "description": "Monitor your digital carbon footprint.",
+  "permissions": ["webRequest", "webRequestBlocking", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },"background": {
+    "service_worker": "background.js"
+  }
+}
