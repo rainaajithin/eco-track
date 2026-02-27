@@ -1,48 +1,167 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>EcoBrowse Dashboard</title>
     <meta charset="UTF-8">
+    <title>EcoBrowse Dashboard</title>
 
-  <script src="chart.js"></script>
-<script src="dashboard.js"></script>
+    <script src="chart.js"></script>
 
     <style>
         body {
             font-family: Arial, sans-serif;
+            background: #f4f6f8;
             padding: 30px;
-            background: #f5f5f5;
+            margin: 0;
         }
+
 
         h1 {
             margin-bottom: 30px;
         }
 
-        .chart-container {
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        
+        /* Card Style */
+        .card {
             background: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        /* Top Emitters Section */
+        .top-section {
             margin-bottom: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Weekly + Table Row */
+        .row-container {
+            display: flex;
+            gap: 30px;
+        }
+
+        .weekly-chart {
+            flex: 2;
+             height: 350px;
+        }
+
+        .grade-section {
+            flex: 1;
+            height: 350px;   /* SAME HEIGHT */
+            overflow-y: auto; /* scroll if needed */
         }
 
         canvas {
-            max-height: 400px;
+            background: white;
+            border-radius: 10px;
         }
+
+        /* Grade Table */
+        .grade-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .grade-table th,
+        .grade-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        .grade-table th {
+            background: #f0f0f0;
+        }
+
+        /* Colored Dots */
+        .dot {
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .green { background-color: #4caf50; }
+        .yellow { background-color: #ffeb3b; }
+        .orange { background-color: #ff9800; }
+        .red { background-color: #f44336; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .row-container {
+                flex-direction: column;
+            }
+        }
+
     </style>
 </head>
+
 <body>
 
     <h1>EcoBrowse CO₂ Dashboard</h1>
 
-    <div class="chart-container">
+    <!-- Top Emitters Bar Chart -->
+    <div class="card top-section">
         <h2>Top Daily Emitters</h2>
-        <canvas id="dailyEmitterChart"></canvas>
+        <canvas id="dailyEmitterChart" height="120"></canvas>
     </div>
 
-    <div class="chart-container">
-        <h2>Daily CO₂ Trend</h2>
-        <canvas id="dailyTrendChart"></canvas>
+    <!-- Weekly Chart + Grade Table -->
+    <div class="row-container">
+
+        <!-- Weekly Line Chart -->
+        <div class="card weekly-chart">
+            <h2>Weekly CO₂ Trend</h2>
+            <canvas id="dailyTrendChart" height="140"></canvas>
+        </div>
+
+        <!-- Grade Scale Table -->
+        <div class="card grade-section">
+            <h2>Carbon Grade Scale</h2>
+
+            <table class="grade-table">
+                <thead>
+                    <tr>
+                        <th>Usage % of 6800g</th>
+                        <th>Grade</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0–25%</td>
+                        <td><span class="dot green"></span> A</td>
+                        <td>Excellent – very low carbon usage</td>
+                    </tr>
+                    <tr>
+                        <td>25–50%</td>
+                        <td><span class="dot yellow"></span> B</td>
+                        <td>Good</td>
+                    </tr>
+                    <tr>
+                        <td>50–70%</td>
+                        <td><span class="dot orange"></span> C</td>
+                        <td>Moderate</td>
+                    </tr>
+                    <tr>
+                        <td>70–90%</td>
+                        <td><span class="dot red"></span> D</td>
+                        <td>High usage</td>
+                    </tr>
+                    <tr>
+                        <td>&gt;90%</td>
+                        <td><span class="dot red"></span> F</td>
+                        <td>Over budget</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
     <script src="dashboard.js"></script>

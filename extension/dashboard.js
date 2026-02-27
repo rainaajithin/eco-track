@@ -59,30 +59,60 @@ function renderBarChart(emitters) {
 function renderLineChart(history) {
 
     const ctx = document.getElementById('dailyTrendChart');
-
     if (!ctx) return;
 
-    const dates = Object.keys(history).sort();
-    const values = dates.map(date => history[date]);
+    // Convert history object to sorted array
+    const entries = Object.entries(history)
+        .sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+    // Get last 7 days only
+    const last7 = entries.slice(-7);
+
+    if (last7.length === 0) {
+        ctx.parentElement.innerHTML += "<p>No weekly data yet.</p>";
+        return;
+    }
+
+    const labels = last7.map(item => {
+        const date = new Date(item[0]);
+        return date.toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric'
+        });
+    });
+
+    const values = last7.map(item => item[1]);
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dates,
+            labels: labels,
             datasets: [{
-                label: 'Daily CO₂ (g)',
+                label: 'Weekly CO₂ (g)',
                 data: values,
-                tension: 0.3
+                tension: 0.3,
+                fill: false
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: { display: true }
             },
             scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'CO₂ (grams)'
+                    }
                 }
             }
         }
