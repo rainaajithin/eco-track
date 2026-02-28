@@ -48,7 +48,8 @@ Dashboard
 
 
 
-https://github.com/user-attachments/assets/2d19fc18-40da-48b8-ba3a-dcac0ea13f1e
+
+https://github.com/user-attachments/assets/b1e124c8-def8-48ae-ae72-ed13dd0362b8
 
 
 
@@ -106,6 +107,7 @@ Binary Ninjas
 - Kathrin Anna James
 
 **Browse responsibly, stay productive, and reduce digital environmental impact.**
+
 
 
 
