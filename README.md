@@ -48,6 +48,12 @@ Dashboard
 <img width="1321" height="349" alt="image" src="https://github.com/user-attachments/assets/aebfebec-de30-4b39-a04c-3c3aac19b23e" />
 
 
+
+https://github.com/user-attachments/assets/2d19fc18-40da-48b8-ba3a-dcac0ea13f1e
+
+
+
+
 **Installation**
 1. Download or clone the repository
 git clone https://github.com/your-username/ecobrowse.git
@@ -57,10 +63,6 @@ git clone https://github.com/your-username/ecobrowse.git
 - Click Load unpacked
 - Select the project folder
 3. EcoBrowse extension is now installed
-
-
-
-https://github.com/user-attachments/assets/2d19fc18-40da-48b8-ba3a-dcac0ea13f1e
 
 
 
@@ -105,6 +107,7 @@ Binary Ninjas
 - Kathrin Anna James
 
 **Browse responsibly, stay productive, and reduce digital environmental impact.**
+
 
 
 
