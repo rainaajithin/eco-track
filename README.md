@@ -6,8 +6,10 @@ EcoTrack is a powerful Chrome Extension that helps users monitor their digital c
 
 **The Problem**
 EcoBrowse addresses two major digital lifestyle challenges:
+
 🌍 Rising carbon footprint from internet usage
 The internet is responsible for approximately 3.7% of global greenhouse gas emissions. However, because digital data is "invisible," most users have no idea how much carbon they are producing while browsing.  Video streaming and heavy websites use massive amounts of energy at data centers, but there is currently no easy way for a user to monitor or manage this "digital footprint" in real-time.
+
 ⏳ Excessive time spent on distracting websites
 Most users do not realize how much time they waste and loose productivity. This gives self awareness. 
 
@@ -95,3 +97,4 @@ Chrome APIs:
 - Kathrin Anna James
 
 **Browse responsibly, stay productive, and reduce digital environmental impact.**
+
