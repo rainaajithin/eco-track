@@ -60,6 +60,10 @@ git clone https://github.com/your-username/ecobrowse.git
 
 
 
+https://github.com/user-attachments/assets/2d19fc18-40da-48b8-ba3a-dcac0ea13f1e
+
+
+
 **Architecture:**
 
 **Data flow:**
@@ -101,6 +105,7 @@ Binary Ninjas
 - Kathrin Anna James
 
 **Browse responsibly, stay productive, and reduce digital environmental impact.**
+
 
 
 
