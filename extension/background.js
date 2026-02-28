@@ -1,96 +1,112 @@
-const CO2_PER_MB = 0.81;
-const BUDGET_G = 6800;
+/**
+ * EcoBrowse 2026 — Final Stable Time Tracking Engine
+ * Tracks ONLY distracting websites
+ */
 
-function cleanDomain(domain) {
-    if (domain.includes("googlevideo.com") || domain.includes("youtube.com")) return "YouTube";
-    if (domain.includes("fbcdn.net") || domain.includes("facebook.com")) return "Facebook";
-    if (domain.includes("instagram.com")) return "Instagram";
-    if (domain.includes("netflix.com")) return "Netflix";
-    if (domain.includes("google") && !domain.includes("youtube")) return "Google Services";
-    if (domain.includes("gstatic.com") || domain.includes("googleapis.com")) {
-        return "Google Infrastructure"; }
-    return domain;
+const DISTRACTING_SITES = [
+    "youtube.com",
+    "instagram.com",
+    "facebook.com",
+    "twitter.com",
+    "reddit.com",
+    "netflix.com",
+    "primevideo.com"
+];
+
+let activeDomain = null;
+let startTime = null;
+
+/* ---------------- TAB EVENTS ---------------- */
+
+chrome.tabs.onActivated.addListener(info => {
+    handleTab(info.tabId);
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === "complete") handleTab(tabId);
+});
+
+chrome.windows.onFocusChanged.addListener(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        if (tabs.length) handleTab(tabs[0].id);
+    });
+});
+
+/* ---------------- CORE ---------------- */
+
+function handleTab(tabId) {
+    stopTracking();
+
+    chrome.tabs.get(tabId, tab => {
+        if (!tab || !tab.url) return;
+
+        if (
+            tab.url.startsWith("chrome://") ||
+            tab.url.startsWith("chrome-extension://")
+        ) return;
+
+        const domain = extractDomain(tab.url);
+        if (!domain) return;
+
+        if (isDistracting(domain)) {
+            activeDomain = domain;
+            startTime = Date.now();
+        }
+    });
 }
 
-chrome.webRequest.onResponseStarted.addListener(
-  (details) => {
-    if (details.tabId === -1 || details.fromCache) return;
+function stopTracking() {
+    if (!activeDomain || !startTime) return;
 
-    const domain = cleanDomain(new URL(details.url).hostname);
-    const header = details.responseHeaders.find(h => h.name.toLowerCase() === 'content-length');
-    let sizeInMB = header ? parseInt(header.value) / 1024 / 1024 : 0.05;
+    const seconds = Math.floor((Date.now() - startTime) / 1000);
 
-    chrome.storage.local.get(
-    ['dailyTotal', 'emitters', 'dailyHistory'],
-    (result) => {
+    if (seconds > 2) {
+        saveTime(activeDomain, seconds);
+    }
 
-        let total = (parseFloat(result.dailyTotal) || 0) + (sizeInMB * CO2_PER_MB);
+    activeDomain = null;
+    startTime = null;
+}
 
-        let emitters = result.emitters || {};
-        emitters[domain] = (emitters[domain] || 0) + (sizeInMB * CO2_PER_MB);
+/* ---------------- STORAGE ---------------- */
 
-        // 🔥 NEW PART — DAILY HISTORY STORAGE
-        const today = new Date().toISOString().split("T")[0];
-        let history = result.dailyHistory || {};
+function saveTime(domain, seconds) {
+    const today = new Date().toISOString().slice(0, 10);
+    const week = getWeekStart();
 
-        history[today] = total;
+    chrome.storage.local.get(['dailyTime', 'weeklyTime'], data => {
+        const daily = data.dailyTime || {};
+        const weekly = data.weeklyTime || {};
+
+        daily[domain] = (daily[domain] || 0) + seconds;
+        weekly[week] = (weekly[week] || 0) + seconds;
 
         chrome.storage.local.set({
-            dailyTotal: total,
-            emitters: emitters,
-            dailyHistory: history
-        }, () => {
-
-            // Badge Update (keep your existing badge logic)
-            chrome.action.setBadgeText({
-                text: Math.round(total).toString()
-            });
-
-            let color = total > BUDGET_G ? "#f44336" : "#4caf50";
-            chrome.action.setBadgeBackgroundColor({ color: color });
-
+            dailyTime: daily,
+            weeklyTime: weekly
         });
+    });
+}
+
+/* ---------------- HELPERS ---------------- */
+
+function extractDomain(url) {
+    try {
+        return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+        return null;
     }
-);
-  },
-  { urls: ["<all_urls>"] },
-  ["responseHeaders"]
-);
-
-// background.js
-
-function getTodayDate() {
-    return new Date().toISOString().split("T")[0];
 }
 
-function addCarbonData(siteName, carbonAmount) {
-
-    chrome.storage.local.get(
-        ["dailyTotal", "emitters", "weeklyHistory"],
-        (data) => {
-
-            let dailyTotal = data.dailyTotal || 0;
-            let emitters = data.emitters || {};
-            let weeklyHistory = data.weeklyHistory || {};
-
-            const today = getTodayDate();
-
-            // Update daily total
-            dailyTotal += carbonAmount;
-
-            // Update daily emitters
-            emitters[siteName] =
-                (emitters[siteName] || 0) + carbonAmount;
-
-            // Update weekly trend
-            weeklyHistory[today] =
-                (weeklyHistory[today] || 0) + carbonAmount;
-
-            chrome.storage.local.set({
-                dailyTotal,
-                emitters,
-                weeklyHistory
-            });
-        }
-    );
+function isDistracting(domain) {
+    return DISTRACTING_SITES.some(site => domain.includes(site));
 }
+
+function getWeekStart() {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(now.setDate(diff)).toISOString().slice(0, 10);
+}
+
+chrome.runtime.onSuspend.addListener(stopTracking);

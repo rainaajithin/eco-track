@@ -2,20 +2,32 @@
  * EcoBrowse 2026 - Popup Logic
  */
 
+/* ---------------- HELPERS ---------------- */
+
 function formatDomainName(domain) {
     if (!domain) return 'Unknown';
     if (domain.includes('gstatic.com')) return 'Google Resources';
     return domain.replace(/^(www\.|encrypted-tbn[0-9]\.)/, '');
 }
 
-function renderData() {
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+
+    if (hrs > 0) return `${hrs}h ${remMins}m`;
+    return `${mins} min`;
+}
+
+/* ---------------- CO₂ RENDER ---------------- */
+
+function renderCO2Data() {
     chrome.storage.local.get(['dailyTotal', 'emitters'], (data) => {
         const total = parseFloat(data.dailyTotal) || 0;
         const emitters = data.emitters || {};
         const budget = 6800;
         const percent = Math.min((total / budget) * 100, 100);
 
-        // Progress Bar
         const bar = document.getElementById('progress-bar');
         if (bar) {
             bar.style.width = percent + "%";
@@ -25,7 +37,6 @@ function renderData() {
             else bar.classList.add('green');
         }
 
-        // Grade
         const gradeElement = document.getElementById('grade');
         if (gradeElement) {
             let grade = "A", color = "#4caf50";
@@ -38,13 +49,11 @@ function renderData() {
             gradeElement.style.backgroundColor = color;
         }
 
-        // Stats
         const statElement = document.getElementById('stat');
         if (statElement) {
             statElement.innerText = `${total.toFixed(2)}g / ${budget}g`;
         }
 
-        // Relativity
         const relativityElement = document.getElementById('relativity');
         if (relativityElement) {
             const treeImpact = (total / 60).toFixed(1);
@@ -55,52 +64,103 @@ function renderData() {
             `;
         }
 
-        // Top Emitters
         const listElement = document.getElementById('top-emitters');
         if (listElement) {
             const sorted = Object.entries(emitters)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
 
-            if (sorted.length === 0) {
+            if (!sorted.length) {
                 listElement.innerHTML = '<div class="emitter-item">Waiting for data...</div>';
             } else {
-                listElement.innerHTML = sorted.map(([site, val]) => {
-                    const cleanName = formatDomainName(site);
-                    const safeVal = parseFloat(val) || 0;
-                    return `
-                        <div class="emitter-item">
-                            <span title="${site}">${cleanName}</span>
-                            <strong>${safeVal.toFixed(1)}g</strong>
-                        </div>
-                    `;
-                }).join('');
+                listElement.innerHTML = sorted.map(([site, val]) => `
+                    <div class="emitter-item">
+                        <span>${formatDomainName(site)}</span>
+                        <strong>${val.toFixed(1)}g</strong>
+                    </div>
+                `).join('');
             }
         }
     });
 }
 
-// Listen for storage changes
+/* ---------------- TIME RENDER ---------------- */
+
+function renderTimeData() {
+    chrome.storage.local.get(['dailyTime'], (data) => {
+        const dailyTime = data.dailyTime || {};
+        const totalSeconds = Object.values(dailyTime).reduce((a, b) => a + b, 0);
+
+        const totalEl = document.getElementById('totalTime');
+        if (totalEl) totalEl.innerText = formatTime(totalSeconds);
+
+        const list = document.getElementById('time-sites');
+        if (!list) return;
+
+        const sorted = Object.entries(dailyTime)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        if (!sorted.length) {
+            list.innerHTML = '<div class="emitter-item">Waiting for data...</div>';
+        } else {
+            list.innerHTML = sorted.map(([site, sec]) => `
+                <div class="emitter-item">
+                    <span>${formatDomainName(site)}</span>
+                    <strong>${formatTime(sec)}</strong>
+                </div>
+            `).join('');
+        }
+    });
+}
+
+/* ---------------- TOGGLE LOGIC ---------------- */
+
+function setupToggle() {
+    const btnCO2 = document.getElementById("btnCO2");
+    const btnTime = document.getElementById("btnTime");
+    const co2View = document.getElementById("co2View");
+    const timeView = document.getElementById("timeView");
+
+    if (!btnCO2 || !btnTime) return;
+
+    btnCO2.onclick = () => toggle(true);
+    btnTime.onclick = () => toggle(false);
+
+    function toggle(showCO2) {
+        co2View.style.display = showCO2 ? "block" : "none";
+        timeView.style.display = showCO2 ? "none" : "block";
+
+        btnCO2.className = showCO2 ? "active" : "btn";
+        btnTime.className = showCO2 ? "btn" : "active";
+    }
+}
+
+/* ---------------- EVENTS ---------------- */
+
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local') renderData();
+    if (namespace === 'local') {
+        renderCO2Data();
+        renderTimeData();
+    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Reset Button
+    setupToggle();
+
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
             if (confirm("Reset today's carbon data?")) {
                 chrome.storage.local.set({ dailyTotal: 0, emitters: {} }, () => {
                     chrome.action.setBadgeText({ text: "0" });
-                    renderData();
+                    renderCO2Data();
                 });
             }
         });
     }
 
-    // View Dashboard Button
     const dashboardBtn = document.getElementById('open-dashboard');
     if (dashboardBtn) {
         dashboardBtn.addEventListener('click', () => {
@@ -110,5 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    renderData();
+    renderCO2Data();
+    renderTimeData();
 });

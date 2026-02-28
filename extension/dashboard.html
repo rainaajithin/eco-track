@@ -14,16 +14,54 @@
             margin: 0;
         }
 
+        h1 { margin-bottom: 20px; }
 
-        h1 {
+        .toggle {margin-bottom: 25px;
+}
+
+.toggle button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.active {
+    background: #4caf50;
+    color: white;
+        }
+
+.btn {
+    background: #ddd;
+    }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
             margin-bottom: 30px;
         }
 
-        h2 {
-            margin-bottom: 15px;
+        .row-container {
+            display: flex;
+            gap: 30px;
         }
 
-        
+        .weekly-chart { flex: 2; height: 350px; }
+        .grade-section { flex: 1; height: 350px; overflow-y: auto; }
+
+        canvas {
+            background: white;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .row-container { flex-direction: column; }
+        }
+
         /* Card Style */
         .card {
             background: white;
@@ -37,11 +75,6 @@
             margin-bottom: 40px;
         }
 
-        /* Weekly + Table Row */
-        .row-container {
-            display: flex;
-            gap: 30px;
-        }
 
         .weekly-chart {
             flex: 2;
@@ -77,6 +110,8 @@
             background: #f0f0f0;
         }
 
+   
+
         /* Colored Dots */
         .dot {
             height: 12px;
@@ -103,7 +138,16 @@
 
 <body>
 
-    <h1>EcoBrowse CO₂ Dashboard</h1>
+<h1>EcoBrowse Dashboard</h1>
+
+<div class="toggle">
+    <button id="btnCO2" class="active">CO₂ Dashboard</button>
+    <button id="btnTime" class="btn">Time Spent</button>
+</div>
+
+<!-- ---------------- CO₂ DASHBOARD ---------------- -->
+<div id="co2View">
+<h1>EcoBrowse CO₂ Dashboard</h1>
 
     <!-- Top Emitters Bar Chart -->
     <div class="card top-section">
@@ -160,11 +204,46 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
+</div>
+</div>
+</div>
 
+
+<!-- ---------------- TIME DASHBOARD ---------------- -->
+
+<<div id="timeView" style="display:none">
+    <div class="card">
+
+        <h2>Daily Time Spent (Distracting Sites)</h2>
+
+        <canvas id="dailyTimeChart" height="120"></canvas>
     </div>
+    <div class="row-container">
+        <div class="card" style="flex:3; height:260px;">
+            <h2>Weekly Time Trend</h2>
+            <canvas id="weeklyTimeChart"></canvas>
+        </div>
+        <div class="card" style="flex:1; height:260px;">
+            <h2>Category Distribution</h2>
+            <canvas id="categoryTimeChart"></canvas>
+        </div>
+    </div>
+</div>
+<script src="dashboard.js"></script>
+<script>
 
-    <script src="dashboard.js"></script>
-
+const btnCO2 = document.getElementById("btnCO2");
+const btnTime = document.getElementById("btnTime");
+const co2View = document.getElementById("co2View");
+const timeView = document.getElementById("timeView");
+btnCO2.onclick = () => toggle(true);
+btnTime.onclick = () => toggle(false);
+function toggle(showCO2) {
+    co2View.style.display = showCO2 ? "block" : "none";
+    timeView.style.display = showCO2 ? "none" : "block";
+    btnCO2.className = showCO2 ? "active" : "btn";
+    btnTime.className = showCO2 ? "btn" : "active";
+}
+</script>
 </body>
 </html>
