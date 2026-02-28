@@ -93,10 +93,14 @@ Chrome APIs:
 
 
 
+
 **Developed by:**
+
+Binary Ninjas
 - Rainaa Anna Jithin
 - Kathrin Anna James
 
 **Browse responsibly, stay productive, and reduce digital environmental impact.**
+
 
 
