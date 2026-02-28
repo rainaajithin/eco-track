@@ -16,6 +16,7 @@ Most users do not realize how much time they waste and loose productivity. This 
 **Techs used**: It is a JavaScript-based Chrome Extension for data capture and a Tailwind CSS/Chart.js dashboard for visualization.
 
 **Features**
+
 Eco-Track is a Chrome Extension and Dashboard that makes the invisible carbon cost of the web visible. It uses open network data to educate users and provide actionable tools to reduce their impact.
 - Real-time Monitoring: Tracks data transfer (MBs) per website visited.
 - Carbon Conversion: Uses industry-standard formulas to convert data usage into CO2 grams.
@@ -97,4 +98,5 @@ Chrome APIs:
 - Kathrin Anna James
 
 **Browse responsibly, stay productive, and reduce digital environmental impact.**
+
 
